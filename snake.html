@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=UTF-8">
+<meta name="viewport" content="user-scalable=no">
+<style type="text/css">
+	canvas{
+		    margin: 0 auto;
+    align-items: center;
+    flex: 1;
+    display: flex;
+	}
+	.clearfix:after {
+    content:"";
+    display:block;
+    clear:both;
+}
+	.game_essentials {
+		padding: 30px;
+	}
+	.game_mechanics{
+		padding: 10px 30px;
+	}
+	.game_essentials button{
+		    padding: 20px;
+    box-sizing: border-box;
+    font-size: 3em;
+    border: none;
+    background: #1565C0;
+    color: #fff;
+    font-family: sans-serif;
+    box-shadow: 0px 10px 10px #ddd;
+	}
+	.score{
+		float: right;
+    font-size: 4em;
+    line-height: 120px;
+    font-family: sans-serif;
+    color: #615c5c;
+    font-weight: bold;
+	}
+	.row{
+		position: relative;
+    width: 900px;
+	}
+	.row span{
+		position: relative;
+    margin: 0 auto;
+    width: 136px;
+    display: block;
+	}
+	.game_mechanics button{
+		font-size: 4em;
+    padding: 20px 50px;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    background: #BF360C;
+    box-shadow: 0px 15px 10px #b5afaf;
+	}
+	.mid{
+		width: 535px !important;;
+	}
+	.mid button{
+		float: left;
+    margin: 20px 50px;
+	}
+	.controls:active{
+		background: #922b0c;
+		box-shadow: 0 0 5px #ddd;
+	}
+</style>
+<script>
+window.onload=function() {
+	canv=document.getElementById("gc");	
+	ctx=canv.getContext("2d");
+	document.addEventListener("keydown",keyPush);
+	// window.addEventListener("deviceorientation", orientation, false);
+	setInterval(game,1000/15);
+}
+notStarted=true;
+score=0;
+px=py=10;
+gs=tc=30;
+ax=ay=15;
+xv=yv=0;
+trail=[];
+tail = 5;
+alive=true;
+hscore=0;
+initialFB=initialLR=0;
+function game() {
+	px+=xv;
+	py+=yv;
+	if(px<0) {
+		px= tc-1;
+	}
+	if(px>tc-1) {
+		px= 0;
+	}
+	if(py<0) {
+		py= tc-1;
+	}
+	if(py>tc-1) {
+		py= 0;
+	}
+	ctx.fillStyle="black";
+	ctx.fillRect(0,0,canv.width,canv.height);
+
+	ctx.fillStyle="lime";
+	for(var i=0;i<trail.length;i++) {
+		ctx.fillRect(trail[i].x*gs,trail[i].y*gs,gs-4,gs-4);
+		if(trail[i].x==px && trail[i].y==py && alive==true) {
+			tail = 5;
+			hscore=score>hscore?score:hscore;
+			score=0;
+			alive=false
+			console.log('dawda');
+			document.getElementById('scores').innerHTML=0;
+			document.getElementById('hscores').innerHTML=hscore;
+		}
+	}
+	trail.push({x:px,y:py});
+	while(trail.length>tail) {
+	trail.shift();
+	}
+
+	if(ax==px && ay==py) {
+		alive=true;
+		tail++;
+		score++;
+			document.getElementById('scores').innerHTML=score;
+		ax=Math.floor(Math.random()*tc);
+		ay=Math.floor(Math.random()*tc);
+	}
+	ctx.fillStyle="red";
+	ctx.fillRect(ax*gs,ay*gs,gs-2,gs-2);
+}
+function keyPush(evt) {
+	switch(evt.keyCode) {
+		case 37:
+			xv=-1;yv=0;
+			break;
+		case 38:
+			xv=0;yv=-1;
+			break;
+		case 39:
+			xv=1;yv=0;
+			break;
+		case 40:
+			xv=0;yv=1;
+			break;
+	}
+}
+
+function control(direction) {
+	switch(direction) {
+		case 37:
+			xv=-1;yv=0;
+			break;
+		case 38:
+			xv=0;yv=-1;
+			break;
+		case 39:
+			xv=1;yv=0;
+			break;
+		case 40:
+			xv=0;yv=1;
+			break;
+	}
+}
+
+function orientation(event){
+  // document.getElementById("magnetometer").innerHTML = "Magnetometer: "
+  //   + Math.ceil(event.alpha) + ", "
+  //   + Math.ceil(event.beta)+ ", "
+  //   + Math.ceil(event.gamma); 
+
+  	if(notStarted){
+  		initialFB=event.beta;
+		initialLR=event.gamma;
+  	}
+  	else{
+  		xv=1;
+  		yv=0;	
+  	}
+ 
+  	console.log(xv+'---'+yv)
+	if((Math.abs(initialFB-event.beta)>5) && ((initialFB-event.beta)>0)){
+		console.log('ss');
+		if(xv==1 || xv==-1){xv=0;yv=-1;}
+		initialFB=event.beta;
+	}
+	else if((Math.abs(initialFB-event.beta)>5) && ((initialFB-event.beta)<0)){
+		if(xv==1 || xv==-1){xv=0;yv=1;}
+		initialFB=event.beta;
+	}
+	else if ((Math.abs(initialLR-event.gamma)>2) && ((initialLR-event.gamma)>0)){
+		if(yv==1 || yv==-1){xv=1;yv=0;}
+		initialLR=event.gamma;
+	}
+	else if((Math.abs(initialLR-event.gamma)>5) && ((initialFB-event.gamma)<0)){
+		if(xv==1 || xv==-1){xv=-1;yv=0;}
+		initialLR=event.gamma;
+	}
+
+}
+
+function go(){
+  // if(window.DeviceMotionEvent){
+  //   window.addEventListener("devicemotion", motion, false);
+  // }else{
+  //   var status = document.getElementById("status");
+  //   status.innerHTML = status.innerHTML.replace(
+  //     "is supported", "is not supported"
+  //   );
+  // }
+  notStarted=false;
+  if(window.DeviceOrientationEvent){
+    window.addEventListener("deviceorientation", orientation, false);
+  }else{
+    var status = document.getElementById("status");
+    status.innerHTML = status.innerHTML.replace(
+      "is supported", "is not supported"
+    );
+  }
+}
+
+</script>
+</head>
+<body>
+<canvas id="gc" width="900" height="900"></canvas>
+<div class="game_essentials clearfix">
+<!-- <button onclick="go()">Start</button> -->
+<div class="score" style="float: left;">HighScore: <span id="hscores">0</span></div>
+<div class="score" style="float: right;">#Score <span id="scores">0</span></div>
+</div>
+<div class="game_mechanics">
+	<div class="row"><span><button onclick="control(38)" class="controls">↑</button></span></div>
+	<div class="row"><span class="mid clearfix"><button onclick="control(37)" class="controls">←</button><button onclick="control(39)" class="controls">→</button></span></div>
+	<div class="row"><span><button onclick="control(40)" class="controls">↓</button></span></div>
+</div>
+</body>
+</html>
